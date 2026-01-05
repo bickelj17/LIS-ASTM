@@ -1,0 +1,18 @@
+[1136.432]  Client 0001: [ENQ]
+[1136.448]  Server 0001: [ACK]
+[1136.463]  Client 0060: [STX]1H|\^&|||Sofia^25045805|||||||P|2.0.19|20251210220914[CR][ETX]D9[CR][LF]
+[1136.477]  Server 0001: [ACK]
+[1136.496]* Client 0086: [STX]2P|1|öäü lyme SP german|||||||||||||||||||||||summers ridge wwwwwwwwwwwwwww9[CR][ETX]72[CR][LF]  *Bad checksum
+[1136.510]  Server 0001: [ACK]
+[1136.524]* Client 0062: [STX]3O|1|üäö öÜÄ|543225^20340806|Lyme||||||1234|||||P[CR][ETX]6E[CR][LF]  *Bad checksum
+[1136.539]  Server 0001: [ACK]
+[1136.554]* Client 0026: [STX]4C|1||Read-Now Mode[CR][ETX]AE[CR][LF]  *Frame number out of sequence
+[1136.568]  Server 0001: [ACK]
+[1136.584]* Client 0051: [STX]5R|1|^^^IgM|negative|||||F||||20251210220914[CR][ETX]07[CR][LF]  *Frame number out of sequence
+[1136.599]  Server 0001: [ACK]
+[1136.613]* Client 0051: [STX]6R|2|^^^IgG|negative|||||F||||20251210220914[CR][ETX]03[CR][LF]  *Frame number out of sequence
+[1136.626]  Server 0001: [ACK]
+[1136.640]* Client 0013: [STX]7L|1|N[CR][ETX]0A[CR][LF]  *Frame number out of sequence
+[1136.653]  Server 0001: [ACK]
+[1136.668]  Client 0001: [EOT]
+[1136.682]  Server 0001: [ACK]   

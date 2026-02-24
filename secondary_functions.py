@@ -3,12 +3,14 @@ from base_functions import *
 
 
 def check_patient(file):
-    reporting_array_2 = []
-    reporting_array_2.append(check_line_1(file))
-    #check_line_2(file)
+    check_line_1(file)
+    check_line_2(file)
+    check_line_3(file)
+    check_line_4(file)
+    check_line_5(file)
+    check_line_6(file)
     print("patient test checked")
 
-    return reporting_array_2
 
 
 # BEGIN

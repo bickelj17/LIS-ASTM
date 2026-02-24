@@ -1,0 +1,1 @@
+highlight errors. cursor can help with this. the last option seamed easiest. 

@@ -13,7 +13,6 @@ def scrape_lines(file):
     return array
 
 def check_line_1(result):
-    reporting_array_1=[]
     if (result[0][0].endswith('1H') and result[0][1]=='\\^&' ): 
         pass
     else:
@@ -34,9 +33,6 @@ def check_line_1(result):
         print('FW or date are configured incorrectly','\n')
     
     print('Serial Number is:',result[0][4].removeprefix('Sofia^'))
-    x='Serial Number is:',result[0][4].removeprefix('Sofia^')
-    reporting_array_1.append(x)
-    print(reporting_array_1)
     print('FW is:',result[0][12])
     
     creation_time=''
@@ -53,7 +49,7 @@ def check_line_1(result):
             print('Message created: ',int(creation_time[8:10])-20,':',creation_time[10:12], ' Local PST',sep='')
         else:
             print('Message created: ',int(creation_time[8:10])-8,':',creation_time[10:12], ' Local PST',sep='')
-    return reporting_array_1
+    return
 
 
 
@@ -153,40 +149,25 @@ def check_line_3(result):
         print('test type is incorrect')             #checks that test type equals 1 character
 
 
-#BEGIN
-'''with open('LIS_result.txt', 'r', encoding='utf-8-sig') as file:
-    result = file.readlines()
-
-result = scrape_lines(result)
-check_line_1(result)
-check_line_2(result)
-check_line_3(result)
-'''
-
-'''
-
-
-
+def check_line_4(result):
     #now checking the fourth line
-    if ('4C' == result[53][-2:]):
+    if ('4C' == result[3][0][-2:]):
         pass
     else:
         print('Fourth line does not start with "4C"')
 
-    if(result[54]=='1'):
+    if(result[3][1]=='1'):
         pass
     else:
         print('Section 54 does not equal 1')
 
-
-
-    if(result[55]==''):
+    if(result[3][2]==''):
         pass
     else:
         print('Section 55 does not equal ""')
 
     test_mode=''
-    for char in result[56]:
+    for char in result[3][3]:
         if char == '[':                    #iterates through the long version of result[56]
             break
         test_mode += char
@@ -196,37 +177,38 @@ check_line_3(result)
         print('Test mode incorrect')
 
 
+def check_line_5(result):
     #now checking the fith line
-    if ('5R' == result[56][-2:]):
+    if ('5R' == result[4][0][-2:]):
         pass
     else:
         print('Fith line does not start with "5R"')
 
-    if(result[57]=='1'):
+    if(result[4][1]=='1'):
         pass
     else:
         print('Section 57 does not equal 1')
 
     analyte_1_name=''
-    for char in reversed(result[58]):
+    for char in reversed(result[4][2]):
         if char == '^':                    #iterates backwards through result[58] and sets analyte name (backwards though, gotta flip it later)
             break
         analyte_1_name += char
     analyte_1_name=analyte_1_name[::-1]
     print(analyte_1_name,'= ',end='')
 
-    analyte_1_result=result[59]
+    analyte_1_result=result[4][3]
     print(analyte_1_result)
 
-    blank=60
-    while blank <68:
-        if result[blank]=='' or result[blank]==result[64]:        #checks for blanks
+    blank=4
+    while blank <11:
+        if result[4][blank]=='' or result[4][blank]==result[4][8]:        #checks for blanks
             pass
         else:
             print('On the fith line at position', blank, ' there is a "', result[blank], '"string where there should be nothing')
         blank+=1
 
-    test_result_type=result[64]
+    test_result_type=result[4][8]
     if test_result_type == ('F' or 'R'):       #test test result type ie if its retransmitted or final
         pass
     else:
@@ -234,7 +216,7 @@ check_line_3(result)
 
 
     test_time=''
-    for char in result[68]:
+    for char in result[4][12]:
         if char == '[':                    #iterates through the long version of result[56]
             break
         test_time += char
@@ -249,21 +231,21 @@ check_line_3(result)
         else:
             print('Test executed at: ',int(test_time[8:10])-8,':',test_time[10:12], ' Local PST',sep='')
 
+
+def check_line_6(result):
     #checking the sixthline now
-    if ('6L' == result[68][-2:]):
+    if ('6L' == result[5][0][-2:]):
         pass
     else:
         print('Sixth line does not start with "6L"')
 
-
-    if(result[69]=='1'):
+    if(result[5][1]=='1'):
         pass
     else:
         print('Section 69 does not equal 1')
 
-    if(result[70][0]=='N'):
+    if(result[5][2]=='N'):
         pass
     else:
         print('Section 70 does not equal "N"')
 
-    '''

@@ -1,1 +1,10 @@
+finalize the patient test
+	including if theres multiple analytes
+		make function that reports the # of analytes
+		change code to run the last line checker on line n, n number of times
+then finalize the QC test
+then finalize the calibration
+
+
 highlight errors. cursor can help with this. the last option seamed easiest. 
+fix the time portion. First just have it display the standard UTC time. later have it say PST time. 

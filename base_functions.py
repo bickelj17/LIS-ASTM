@@ -1,15 +1,16 @@
 import re
 
+  
+
 def scrape_lines(file):
     array=[]
     for line in file:
         if (file.index(line)%2)==0 and file.index(line)>0 and file.index(line) < len(file)-2:  #adds all the relevant lines of the result to an array
             array.append(line)
     
-    
     for i in list(range(len(array))):        #breaks each line of the result into its individual pieces of data
         array[i]=array[i].split('|')
-    
+
     return array
 
 def check_line_1(result):
@@ -23,7 +24,7 @@ def check_line_1(result):
         print("there are values where blank spaces should be")
     if(len(result[0][4])!=14):
         print("serial number configured incorrectly")
-    if (result[0][11]=='P' or result[0][11]=='Q' or result[0][11]=='C'):
+    if (result[0][11]=='P'):
         pass
     else:
         print("test identifier is incorrect")
@@ -44,18 +45,18 @@ def check_line_1(result):
     if (len(creation_time))!=14:               #checks that creation date/time is exactly 15 characters
         print('Message creation date and time incorrect length')
     else:
-        #print('Message created: ',creation_time[4:6],'/', creation_time[6:8],'/',creation_time[0:4], ' at ', creation_time[8:10],':',creation_time[10:12], ' UTC',sep='')
-        if(int(creation_time[8:10])>12):
-            print('Message created: ',int(creation_time[8:10])-20,':',creation_time[10:12], ' Local PST',sep='')
-        else:
-            print('Message created: ',int(creation_time[8:10])-8,':',creation_time[10:12], ' Local PST',sep='')
+        print('Message created: ',creation_time[4:6],'/', creation_time[6:8],'/',creation_time[0:4], ' at ', creation_time[8:10],':',creation_time[10:12], ' UTC',sep='')
+        if(int(creation_time[8:10])>8):
+            print('Message created: ',creation_time[4:6],'/', creation_time[6:8],'/',creation_time[0:4], ' at ', int(creation_time[8:10])-8,':',creation_time[10:12], ' Local PST',sep='')
+        elif(int(creation_time[8:10])<=8):
+            print('Message created: ',creation_time[4:6],'/', int(creation_time[6:8])-1,'/',creation_time[0:4], ' at ', int(creation_time[8:10])+16,':',creation_time[10:12], ' Local PST',sep='')
     return
 
 
 
 
 
-def check_line_2(result):
+def check_line_2(result,test_type):
     if ('2P' == result[1][0][-2:]):
         pass
     else:
@@ -66,10 +67,18 @@ def check_line_2(result):
     else:
         print('Section 13 does not equal 1')
     
-    if (len(result[1][2]))<21:
-        print('Patient ID:',result[1][2])
-    else:
-        print('Patient ID length too long')
+    if (test_type == "P"):
+        if (len(result[1][2]))<21:
+            print('Patient ID:',result[1][2])
+        else:
+            print('Patient ID length too long')
+    
+    if (test_type == "Q" or test_type == "C"):
+        if (len(result[1][2]))<21:
+            print('Cassette serial #:',result[1][2])
+        else:
+            print('Cassette serial # length too long')
+    
 
     blank=3
     while blank <25:
@@ -91,7 +100,7 @@ def check_line_2(result):
     return
 
 
-def check_line_3(result):
+def check_line_3(result,test_type):
     if ('3O' == result[2][0][-2:]):
         pass
     else:
@@ -102,10 +111,21 @@ def check_line_3(result):
     else:
         print('Section 39 does not equal 1')
 
-    if (len(result[2][2]))<21:               #checks that order number is less than 20 characters
-        print('Order Number:',result[2][2])
-    else:
-        print('Order Number is too long')
+    if (test_type == "P"):
+        if (len(result[2][2]))<21:               #checks that order number is less than 20 characters
+            print('Order Number:',result[2][2])
+        else:
+            print('Order Number is too long')
+    if (test_type == "Q"):
+        if (len(result[2][2]))<21:               #checks that order number is less than 20 characters
+            print('Kit lot number:',result[2][2])
+        else:
+            print('Kit lot number is too long')
+    if (test_type == "C"):
+        if (len(result[2][2]))<21:               #checks that order number is less than 20 characters
+            print('Calibration lot Number:',result[2][2])
+        else:
+            print('Calibration lot Number is too long')
 
     cassette_lot=''
     cassette_expiry=''
@@ -123,8 +143,12 @@ def check_line_3(result):
     print("Cassette Lot:", cassette_lot)
     print("Cassette expiry: ", cassette_expiry[4:6],'/',cassette_expiry[6:8],'/',cassette_expiry[0:4],sep='')
 
+    
     assay=result[2][4]
-    print('Assay short name:',assay)
+    if(test_type== "P" or test_type=="Q"):
+        print('Assay short name:',assay)
+    if (test_type== "C" ):
+         print('Calibration short name:',assay)
 
     blank=5
     while blank <15:
@@ -142,8 +166,11 @@ def check_line_3(result):
         if char == '[':                    #iterates through the long version of result[38]
             break
         test_type += char
-    if(test_type=='P'):
-        print('Test type: Patient')
+    if(test_type=='P' or test_type=='Q' or test_type=='C'):
+        pass
+    else:
+        print('test type is undefined')
+        
 
     if (len(test_type))!=1:
         print('test type is incorrect')             #checks that test type equals 1 character
@@ -177,75 +204,134 @@ def check_line_4(result):
         print('Test mode incorrect')
 
 
-def check_line_5(result):
-    #now checking the fith line
-    if ('5R' == result[4][0][-2:]):
-        pass
-    else:
-        print('Fith line does not start with "5R"')
+def check_line_analyte(result, length):
+    #now checking the analytes lines
+    for i in range(length-5):
+        if (str(i+5) + 'R' == result[i+4][0][-2:]):
+            pass
+        else:
+            print('Line', i+5, 'does not start with "', i+5, 'R"')
+        
+        if(result[i+4][1]==str(i+1)):
+            pass
+        else:
+            print('Section 57 does not equal 1')
 
-    if(result[4][1]=='1'):
+        analyte_1_name=''
+        for char in reversed(result[i+4][2]):
+            if char == '^':                    #iterates backwards through result[58] and sets analyte name (backwards though, gotta flip it later)
+                break
+            analyte_1_name += char
+        analyte_1_name=analyte_1_name[::-1]
+        print(analyte_1_name,'= ',end='')
+
+        analyte_1_result=result[i+4][3]
+        print(analyte_1_result)
+
+        blank=4
+        while blank <11:
+            if result[i+4][blank]=='' or result[i+4][blank]==result[i+4][8]:        #checks for blanks
+                pass
+            else:
+                print('On the fith line at position', blank, ' there is a "', result[blank], '"string where there should be nothing')
+            blank+=1
+
+        transmission_type=result[i+4][8]
+        if transmission_type == ('F' or 'R'):       #test test result type ie if its retransmitted or final
+            pass
+        else:
+            print('Transmission type incorrect')
+
+
+        test_time=''
+        for char in result[i+4][12]:
+            if char == '[':                    #iterates through the long version of result[56]
+                break
+            test_time += char
+        #print(test_time)
+        if (len(test_time))!=14:               #checks that execution date/time is exactly than 15 characters
+            print('Test execution date and time incorrect length')
+        else:
+            print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', test_time[8:10],':',test_time[10:12], ' UTC',sep='')
+            if(int(test_time[8:10])>8):
+                print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', int(test_time[8:10])-8,':',test_time[10:12], ' Local PST',sep='')
+            elif(int(test_time[8:10])<=8):
+                print('Test executed at: ',test_time[4:6],'/', int(test_time[6:8])-1,'/',test_time[0:4], ' at ', int(test_time[8:10])+16,':',test_time[10:12], ' Local PST',sep='')
+        
+
+def check_line_calibration(result):
+    #now checking the calibration result line
+    if ('4R' == result[3][0][-2:]):
         pass
     else:
-        print('Section 57 does not equal 1')
+        print('Fourth line does not start with "4R"')
+    
+    if(result[3][1]=='1'):
+        pass
+    else:
+        print('Section 54 does not equal 1')
 
     analyte_1_name=''
-    for char in reversed(result[4][2]):
+    for char in reversed(result[3][2]):
         if char == '^':                    #iterates backwards through result[58] and sets analyte name (backwards though, gotta flip it later)
             break
         analyte_1_name += char
     analyte_1_name=analyte_1_name[::-1]
     print(analyte_1_name,'= ',end='')
 
-    analyte_1_result=result[4][3]
+    analyte_1_result=result[3][3]
     print(analyte_1_result)
 
     blank=4
     while blank <11:
-        if result[4][blank]=='' or result[4][blank]==result[4][8]:        #checks for blanks
+        if result[3][blank]=='' or result[3][blank]==result[3][8]:        #checks for blanks
             pass
         else:
             print('On the fith line at position', blank, ' there is a "', result[blank], '"string where there should be nothing')
         blank+=1
 
-    test_result_type=result[4][8]
-    if test_result_type == ('F' or 'R'):       #test test result type ie if its retransmitted or final
+    transmission_type=result[3][8]
+    if (transmission_type == 'F' or transmission_type == 'R'):       #test test result type ie if its retransmitted or final
         pass
     else:
-        print('test result type incorrect')
+        print('Transmission type incorrect')
 
 
-    test_time=''
-    for char in result[4][12]:
-        if char == '[':                    #iterates through the long version of result[56]
-            break
-        test_time += char
-    #print(test_time)
-    if (len(test_time))!=14:               #checks that execution date/time is exactly than 15 characters
-        print('Test execution date and time incorrect length')
-    else:
-        #print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', test_time[8:10],':',test_time[10:12], ' UTC',sep='')
-        #print(int(test_time[8:10])-8,':',test_time[10:12], ' Local PST 24H',sep='')
-        if(int(test_time[8:10])>12):
-            print('Test executed at: ',int(test_time[8:10])-20,':',test_time[10:12], ' Local PST',sep='')
+        test_time=''
+        for char in result[3][12]:
+            if char == '[':                    #iterates through the long version of result[56]
+                break
+            test_time += char
+        #print(test_time)
+        if (len(test_time))!=14:               #checks that execution date/time is exactly than 15 characters
+            print('Test execution date and time incorrect length')
         else:
-            print('Test executed at: ',int(test_time[8:10])-8,':',test_time[10:12], ' Local PST',sep='')
+            #print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', test_time[8:10],':',test_time[10:12], ' UTC',sep='')
+            #print(int(test_time[8:10])-8,':',test_time[10:12], ' Local PST 24H',sep='')
+            if(int(test_time[8:10])>12):
+                print('Test executed at: ',int(test_time[8:10])-20,':',test_time[10:12], ' Local PST',sep='')
+            else:
+                print('Test executed at: ',int(test_time[8:10])-8,':',test_time[10:12], ' Local PST',sep='')
 
 
-def check_line_6(result):
-    #checking the sixthline now
-    if ('6L' == result[5][0][-2:]):
+
+def check_last_line(result, length):
+    #checking the the last line now
+
+
+    if (str(length) + 'L' == result[length-1][0][-2:]):
         pass
     else:
-        print('Sixth line does not start with "6L"')
+        print('Last line does not start with "', length, 'L"')
 
-    if(result[5][1]=='1'):
+    if(result[length-1][1]=='1'):
         pass
     else:
         print('Section 69 does not equal 1')
 
-    if(result[5][2]=='N'):
+    if(result[length-1][2][0]=='N'):
         pass
     else:
         print('Section 70 does not equal "N"')
+
 

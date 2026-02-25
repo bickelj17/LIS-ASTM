@@ -1,44 +1,70 @@
-
 import sys
 import io
 import gradio as gr
 
 from secondary_functions import *
 
+# Set to True for terminal-only mode using LIS_result.txt;
+# False to use the Gradio website with uploaded files.
+PRINT_TO_TERMINAL = True
+
 
 def project(file):
     """
-    Gradio callback:
-    - reads the uploaded file
-    - parses it into ASTM fields
-    - runs the existing patient checks
-    - returns everything that would normally be printed to the console
+    Gradio callback: only used when PRINT_TO_TERMINAL is False.
+    Reads the uploaded file, runs the checks, and returns output to the website.
     """
-    # Capture all prints from the checking functions
+    with open(file.name, "r", encoding="utf-8-sig") as f:
+        lines = f.readlines()
+    parsed = scrape_lines(lines)
+    t = test_type(parsed)
+
     buffer = io.StringIO()
     old_stdout = sys.stdout
     sys.stdout = buffer
-
     try:
-        with open(file.name, "r", encoding="utf-8-sig") as f:
-            lines = f.readlines()
-
-        # Use existing helpers imported via secondary_functions -> base_functions
-        parsed = scrape_lines(lines)
-        check_patient(parsed)
+        if t == "P":
+            check_patient(parsed, t)
+        elif t == "Q":
+            check_qc(parsed, t)
+        elif t == "C":
+            check_calibration(parsed, t)
+        else:
+            print("Unknown or invalid test type:", t)
     finally:
-        # Restore normal stdout even if something goes wrong
         sys.stdout = old_stdout
-
-    # Send the captured log back to the Gradio textbox
     return buffer.getvalue()
-   
-
-interface = gr.Interface(
-    fn=project,
-    inputs=gr.File(label="upload a text file"),
-    outputs=gr.Textbox(label="file analysis result")
-)
 
 
-interface.launch()
+def run_cli():
+    """
+    Terminal-only mode: read LIS_result.txt and print checks to the terminal.
+    """
+    with open("LIS_result.txt", "r", encoding="utf-8-sig") as f:
+        lines = f.readlines()
+    parsed = scrape_lines(lines)
+    t = test_type(parsed)
+    # Show test type in the terminal (P/Q/C or "error")
+    print("Test type:", t)
+
+    if t == "P":
+        check_patient(parsed, t)
+    elif t == "Q":
+        check_qc(parsed, t)
+    elif t == "C":
+        check_calibration(parsed, t)
+    else:
+        print("Unknown or invalid test type:", t)
+
+
+if __name__ == "__main__":
+    if PRINT_TO_TERMINAL:
+        # No website at all, just run on LIS_result.txt and exit.
+        run_cli()
+    else:
+        interface = gr.Interface(
+            fn=project,
+            inputs=gr.File(label="upload a text file"),
+            outputs=gr.Textbox(label="file analysis result")
+        )
+        interface.launch()

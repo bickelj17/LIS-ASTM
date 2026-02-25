@@ -23,7 +23,7 @@ def check_patient(file, test_type_value):
     check_line_4(file)
     check_line_analyte(file, length)
     check_last_line(file, length)
-    print("patient test checked")
+    print("Patient test checked")
 
 
 def check_qc(file, test_type_value):
@@ -34,7 +34,7 @@ def check_qc(file, test_type_value):
     check_line_4(file)
     check_line_analyte(file, length)
     check_last_line(file, length)
-    print("qc test checked")
+    print("QC test checked")
 
 
 def check_calibration(file, test_type_value):

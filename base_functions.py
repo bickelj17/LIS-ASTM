@@ -45,7 +45,7 @@ def check_line_1(result):
     if (len(creation_time))!=14:               #checks that creation date/time is exactly 15 characters
         print('Message creation date and time incorrect length')
     else:
-        print('Message created: ',creation_time[4:6],'/', creation_time[6:8],'/',creation_time[0:4], ' at ', creation_time[8:10],':',creation_time[10:12], ' UTC',sep='')
+        #print('Message created: ',creation_time[4:6],'/', creation_time[6:8],'/',creation_time[0:4], ' at ', creation_time[8:10],':',creation_time[10:12], ' UTC',sep='')
         if(int(creation_time[8:10])>8):
             print('Message created: ',creation_time[4:6],'/', creation_time[6:8],'/',creation_time[0:4], ' at ', int(creation_time[8:10])-8,':',creation_time[10:12], ' Local PST',sep='')
         elif(int(creation_time[8:10])<=8):
@@ -252,12 +252,11 @@ def check_line_analyte(result, length):
         if (len(test_time))!=14:               #checks that execution date/time is exactly than 15 characters
             print('Test execution date and time incorrect length')
         else:
-            print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', test_time[8:10],':',test_time[10:12], ' UTC',sep='')
+            #print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', test_time[8:10],':',test_time[10:12], ' UTC',sep='')
             if(int(test_time[8:10])>8):
                 print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', int(test_time[8:10])-8,':',test_time[10:12], ' Local PST',sep='')
             elif(int(test_time[8:10])<=8):
                 print('Test executed at: ',test_time[4:6],'/', int(test_time[6:8])-1,'/',test_time[0:4], ' at ', int(test_time[8:10])+16,':',test_time[10:12], ' Local PST',sep='')
-        
 
 def check_line_calibration(result):
     #now checking the calibration result line
@@ -297,21 +296,20 @@ def check_line_calibration(result):
         print('Transmission type incorrect')
 
 
-        test_time=''
-        for char in result[3][12]:
-            if char == '[':                    #iterates through the long version of result[56]
-                break
-            test_time += char
-        #print(test_time)
-        if (len(test_time))!=14:               #checks that execution date/time is exactly than 15 characters
-            print('Test execution date and time incorrect length')
-        else:
-            #print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', test_time[8:10],':',test_time[10:12], ' UTC',sep='')
-            #print(int(test_time[8:10])-8,':',test_time[10:12], ' Local PST 24H',sep='')
-            if(int(test_time[8:10])>12):
-                print('Test executed at: ',int(test_time[8:10])-20,':',test_time[10:12], ' Local PST',sep='')
-            else:
-                print('Test executed at: ',int(test_time[8:10])-8,':',test_time[10:12], ' Local PST',sep='')
+    test_time=''
+    for char in result[3][12]:
+        if char == '[':                    #iterates through the long version of result[56]
+            break
+        test_time += char
+    #print(test_time)
+    if (len(test_time))!=14:               #checks that execution date/time is exactly 14 characters
+        print('Test execution date and time incorrect length')
+    else:
+        #print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', test_time[8:10],':',test_time[10:12], ' UTC',sep='')
+        if(int(test_time[8:10])>8):
+            print('Test executed at: ',test_time[4:6],'/', test_time[6:8],'/',test_time[0:4], ' at ', int(test_time[8:10])-8,':',test_time[10:12], ' Local PST',sep='')
+        elif(int(test_time[8:10])<=8):
+            print('Test executed at: ',test_time[4:6],'/', int(test_time[6:8])-1,'/',test_time[0:4], ' at ', int(test_time[8:10])+16,':',test_time[10:12], ' Local PST',sep='')
 
 
 

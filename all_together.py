@@ -6,7 +6,7 @@ from secondary_functions import *
 
 # Set to True for terminal-only mode using LIS_result.txt;
 # False to use the Gradio website with uploaded files.
-PRINT_TO_TERMINAL = True
+PRINT_TO_TERMINAL = False
 
 
 def project(file):
@@ -64,7 +64,8 @@ if __name__ == "__main__":
     else:
         interface = gr.Interface(
             fn=project,
-            inputs=gr.File(label="upload a text file"),
-            outputs=gr.Textbox(label="file analysis result")
+            inputs=gr.File(label="Upload an ASTM result file"),
+            outputs=gr.Textbox(label="File Analysis")
         )
-        interface.launch()
+        # share=True creates a temporary public link you can share
+        interface.launch(share=True)

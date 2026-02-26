@@ -237,7 +237,7 @@ def check_line_analyte(result, length):
             blank+=1
 
         transmission_type=result[i+4][8]
-        if transmission_type == ('F' or 'R'):       #test test result type ie if its retransmitted or final
+        if transmission_type =='F' or transmission_type =='R':       #test test result type ie if its retransmitted or final
             pass
         else:
             print('Transmission type incorrect')

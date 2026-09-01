@@ -17,7 +17,7 @@ from pathlib import Path
 from flask import Flask, request, render_template_string
 from werkzeug.utils import secure_filename
 
-from line_checks import scrape_lines
+from line_checks import scrape_lines, check_transmission_notes
 from astm_checks import test_type, check_patient, check_qc, check_calibration
 
 app = Flask(__name__)
@@ -58,6 +58,13 @@ INDEX_HTML = """
             background: #fff1f2; display: inline; padding: 0.1em 0.25em;
             border-radius: 4px;
         }
+        /* The "<type> test checked" summary line: green if the file had no
+           errors, red (same style as .error-line) if it did. */
+        .output .ok-line {
+            color: #15803d; font-weight: 600;
+            background: #f0fdf4; display: inline; padding: 0.1em 0.25em;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -90,6 +97,7 @@ def run_analysis(file_path: str) -> str:
     old_stdout = sys.stdout
     sys.stdout = buffer
     try:
+        check_transmission_notes(lines)
         if t == "P":
             check_patient(parsed, t)
         elif t == "Q":
@@ -103,24 +111,37 @@ def run_analysis(file_path: str) -> str:
     return buffer.getvalue()
 
 
+def _is_error_line(line: str) -> bool:
+    """True for lines that report a problem (Error: prefix, or 'incorrect' /
+    'invalid' anywhere), matching what line_checks/astm_checks print."""
+    lower = line.lstrip().lower()
+    return (
+        lower.startswith("error:")
+        or "incorrect" in lower
+        or "invalid" in lower
+    )
+
+
 def result_to_html(text: str) -> str:
     """
     Turn captured stdout into HTML so lines that report problems stand out.
-    Each line is escaped; error lines get a highlight span (Error: prefix, or
-    'incorrect' / 'invalid' anywhere, matches line_checks output).
+    Each line is escaped; error lines get a red highlight span. The
+    "<type> test checked" summary line (now printed first) gets its own
+    highlight: green if nothing else in the output reported a problem,
+    red if something did - a quick pass/fail signal at a glance.
     """
     if not text:
         return ""
+    lines = text.splitlines()
+    has_errors = any(_is_error_line(line) for line in lines)
+
     chunks = []
-    for line in text.splitlines():
+    for line in lines:
         esc = html.escape(line)
-        lower = line.lstrip().lower()
-        is_error_line = (
-            lower.startswith("error:")
-            or "incorrect" in lower
-            or "invalid" in lower
-        )
-        if is_error_line:
+        if line.strip().endswith("test checked"):
+            css_class = "error-line" if has_errors else "ok-line"
+            chunks.append(f'<span class="{css_class}">{esc}</span>')
+        elif _is_error_line(line):
             chunks.append(f'<span class="error-line">{esc}</span>')
         else:
             chunks.append(esc)

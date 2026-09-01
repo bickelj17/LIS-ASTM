@@ -16,6 +16,7 @@ def test_type(file):
 
 def check_patient(file, test_type_value):
     # Parsed ASTM records are passed in as `file`.
+    print("Patient test checked")
     length = len(file)
     check_line_1(file)
     check_line_2(file, test_type_value)
@@ -23,10 +24,10 @@ def check_patient(file, test_type_value):
     check_line_4(file)
     check_line_analyte(file, length)
     check_last_line(file, length)
-    print("Patient test checked")
 
 
 def check_qc(file, test_type_value):
+    print("QC test checked")
     length = len(file)
     check_line_1(file)
     check_line_2(file, test_type_value)
@@ -34,17 +35,16 @@ def check_qc(file, test_type_value):
     check_line_4(file)
     check_line_analyte(file, length)
     check_last_line(file, length)
-    print("QC test checked")
 
 
 def check_calibration(file, test_type_value):
+    print("Calibration test checked")
     length = len(file)
     check_line_1(file)
     check_line_2(file, test_type_value)
     check_line_3(file, test_type_value)
     check_line_calibration(file)
     check_last_line(file, length)
-    print("Calibration test checked")
 
 
 # BEGIN
@@ -53,9 +53,10 @@ if __name__ == "__main__":
     # (This used to point at "LIS_result.txt" in the project root, which
     # doesn't exist there - the sample files all live in sample_results/.)
     with open("sample_results/LIS_result.txt", "r", encoding="utf-8-sig") as file:
-        result = file.readlines()
+        raw_lines = file.readlines()
 
-    result = scrape_lines(result)
+    check_transmission_notes(raw_lines)
+    result = scrape_lines(raw_lines)
     t = test_type(result)
     if t == "P":
         check_patient(result, t)

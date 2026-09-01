@@ -25,6 +25,28 @@ def format_local_time(raw_utc_timestamp, label):
           f'at {local_dt.hour:02d}:{local_dt.minute:02d} Local {local_dt.tzname()}')
 
 
+# The raw transmission log tags a problem frame by appending a note right
+# after the frame's own [CR][ETX]<checksum>[CR][LF] bytes, e.g.:
+#   ...[CR][ETX]72[CR][LF]  *Bad checksum
+#   ...[CR][ETX]AE[CR][LF]  *Frame number out of sequence
+# Rather than hardcoding just those two strings, this matches the shape of
+# the note itself ("[LF]" followed by "*" and free text) so any future
+# note logged in the same format gets caught automatically.
+TRANSMISSION_NOTE_RE = re.compile(r'\[LF\]\s*\*(?P<note>.+?)\s*$')
+
+
+def check_transmission_notes(file):
+    """
+    Scans the raw file lines (before scrape_lines() splits them on '|') for
+    an instrument/log-reported transmission problem such as a bad checksum
+    or an out-of-sequence frame number, and reports every one found.
+    """
+    for line_number, line in enumerate(file, start=1):
+        match = TRANSMISSION_NOTE_RE.search(line)
+        if match:
+            print('Error: Line', line_number, 'reports:', match.group('note'))
+
+
 def scrape_lines(file):
     array=[]
     for idx, line in enumerate(file):        #adds all the relevant lines of the result to an array

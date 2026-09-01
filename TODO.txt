@@ -1,0 +1,45 @@
+
+BOTH
+S/CO values
+highlight errors. cursor can help with this. the last option seamed easiest. 
+include conversion for daylight savings
+version numbers
+look through Azure for additional test checks
+does it display age and "outpatient'?
+
+ASTM
+say if there are bad checksums or frame number out of sequence
+"patient test checked" at top or not at all
+
+POCT
+check if there are bad characters
+check that control ID's are unique
+check that dates are in right format
+handle more than 1 analyte for patient test
+
+bug 35282
+
+Excel Checker
+Virena
+QC export
+patient export
+calibration export
+
+clinical data?
+patient data export?
+
+
+
+Does the team want to have the LIS F or R flag reported?
+ 
+
+
+
+11:27am 2/25/2026
+
+2026 02 25 19 27 17
+
+20260225 19 2717
+
+Hello, program checks 
+Dont implement anything, please just tell me what the best way to get the error outputs to be highlighted. For example "'Test execution date and time incorrect length'"

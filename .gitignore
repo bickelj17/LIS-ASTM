@@ -1,0 +1,16 @@
+# Python build artifacts (regenerate automatically, shouldn't be in git)
+__pycache__/
+*.pyc
+
+# Leftover from the old Gradio version
+.gradio/
+
+# Runtime scratch space (app.py now uses a private temp folder instead,
+# but keep this ignored in case anything still lands here)
+uploads/
+
+# Distributable zips built by build_dist.py - regenerate, don't commit
+*.zip
+
+# macOS Finder metadata
+.DS_Store

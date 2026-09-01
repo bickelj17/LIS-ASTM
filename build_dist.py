@@ -1,20 +1,20 @@
 """
 Build the distributable zip for teammates.
 Run: python build_dist.py
-Creates: ASTM_Analysis.zip (in this folder)
+Creates: LIS_ASTM_Analysis.zip (in this folder)
 """
 import zipfile
 from pathlib import Path
 
 FILES = [
     "app.py",
-    "secondary_functions.py",
-    "base_functions.py",
+    "astm_checks.py",
+    "line_checks.py",
     "requirements.txt",
     "run.bat",
-    "FOR_TEAMMATES.txt",
+    "README.txt",
 ]
-ZIP_NAME = "ASTM_Analysis.zip"
+ZIP_NAME = "LIS_ASTM_Analysis.zip"
 
 def main():
     root = Path(__file__).resolve().parent
@@ -28,7 +28,7 @@ def main():
             else:
                 print(f"  Skip (missing): {name}")
     print(f"\n  Created: {zip_path}")
-    print("  Send ASTM_Analysis.zip to teammates. They unzip and double-click run.bat.")
+    print(f"  Send {ZIP_NAME} to teammates. They unzip and double-click run.bat.")
 
 if __name__ == "__main__":
     main()

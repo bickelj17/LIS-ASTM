@@ -5,9 +5,11 @@ Run: python app.py
 - Teammates (same network): http://<your-IP>:5000  (printed when server starts)
 No Gradio or shared links required.
 """
+import html
 import io
 import socket
 import sys
+import tempfile
 import threading
 import webbrowser
 from pathlib import Path
@@ -15,7 +17,8 @@ from pathlib import Path
 from flask import Flask, request, render_template_string
 from werkzeug.utils import secure_filename
 
-from secondary_functions import scrape_lines, test_type, check_patient, check_qc, check_calibration
+from line_checks import scrape_lines
+from astm_checks import test_type, check_patient, check_qc, check_calibration
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 4 * 1024 * 1024  # 4 MB max upload
@@ -44,7 +47,17 @@ INDEX_HTML = """
             padding: 1rem; white-space: pre-wrap; font-family: ui-monospace, monospace;
             font-size: 0.9rem; min-height: 80px;
         }
-        .error { color: #b91c1c; }
+        .error {
+            color: #b91c1c; font-weight: 600;
+            background: #fef2f2; border: 1px solid #fecaca;
+            border-radius: 8px; padding: 0.75rem 1rem; margin-top: 1rem;
+        }
+        /* Lines inside analysis output that report failures */
+        .output .error-line {
+            color: #b91c1c; font-weight: 600;
+            background: #fff1f2; display: inline; padding: 0.1em 0.25em;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -56,7 +69,7 @@ INDEX_HTML = """
     </form>
     {% if result is not none %}
     <h2>File Analysis</h2>
-    <div class="output">{{ result }}</div>
+    <div class="output">{{ result_html | safe }}</div>
     {% endif %}
     {% if error %}
     <p class="error">{{ error }}</p>
@@ -90,33 +103,66 @@ def run_analysis(file_path: str) -> str:
     return buffer.getvalue()
 
 
+def result_to_html(text: str) -> str:
+    """
+    Turn captured stdout into HTML so lines that report problems stand out.
+    Each line is escaped; error lines get a highlight span (Error: prefix, or
+    'incorrect' / 'invalid' anywhere, matches line_checks output).
+    """
+    if not text:
+        return ""
+    chunks = []
+    for line in text.splitlines():
+        esc = html.escape(line)
+        lower = line.lstrip().lower()
+        is_error_line = (
+            lower.startswith("error:")
+            or "incorrect" in lower
+            or "invalid" in lower
+        )
+        if is_error_line:
+            chunks.append(f'<span class="error-line">{esc}</span>')
+        else:
+            chunks.append(esc)
+    return "<br>\n".join(chunks)
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     result = None
+    result_html = ""
     error = None
     if request.method == "POST":
         if "file" not in request.files:
             error = "No file selected."
-            return render_template_string(INDEX_HTML, result=result, error=error)
+            return render_template_string(
+                INDEX_HTML, result=result, result_html=result_html, error=error
+            )
         f = request.files["file"]
         if not f.filename:
             error = "No file selected."
-            return render_template_string(INDEX_HTML, result=result, error=error)
+            return render_template_string(
+                INDEX_HTML, result=result, result_html=result_html, error=error
+            )
         filename = secure_filename(f.filename)
         if not filename:
             filename = "upload.txt"
-        work_dir = Path(app.root_path) / "uploads"
-        work_dir.mkdir(exist_ok=True)
-        path = work_dir / filename
         try:
-            f.save(str(path))
-            result = run_analysis(str(path))
+            # Each request gets its own private temp folder (auto-deleted on
+            # exit) instead of a shared "uploads" folder next to the script.
+            # That shared folder caused two people running this at the same
+            # time (e.g. off a network share) to overwrite/delete each
+            # other's in-progress upload.
+            with tempfile.TemporaryDirectory(prefix="astm_upload_") as tmp_dir:
+                path = Path(tmp_dir) / filename
+                f.save(str(path))
+                result = run_analysis(str(path))
+                result_html = result_to_html(result)
         except Exception as e:
             error = str(e)
-        finally:
-            if path.exists():
-                path.unlink(missing_ok=True)
-    return render_template_string(INDEX_HTML, result=result, error=error)
+    return render_template_string(
+        INDEX_HTML, result=result, result_html=result_html, error=error
+    )
 
 
 def _local_ip():

@@ -200,7 +200,10 @@ def check_line_3(result,test_type):
         blank+=1
 
     user_id=result[2][10]
-    print('User ID:',user_id)
+    if (len(user_id))<21:
+        print('User ID:',user_id)
+    else:
+        print('Error: User ID length too long')
 
     test_type=''
     for char in result[2][15]:
@@ -247,12 +250,13 @@ def check_line_4(result):
 
 def check_line_analyte(result, length):
     #now checking the analytes lines
+    analytes = []  # collected here, printed (and S/CO-merged) after the loop
     for i in range(length-5):
         if (str(i+5) + 'R' == result[i+4][0][-2:]):
             pass
         else:
             print('Error: Line', i+5, 'does not start with "', i+5, 'R"')
-        
+
         if(result[i+4][1]==str(i+1)):
             pass
         else:
@@ -264,10 +268,10 @@ def check_line_analyte(result, length):
                 break
             analyte_1_name += char
         analyte_1_name=analyte_1_name[::-1]
-        print(analyte_1_name,'= ',end='')
 
         analyte_1_result=result[i+4][3]
-        print(analyte_1_result)
+        if analyte_1_result == '':
+            print('Error: Analyte result value is missing')
 
         blank=4
         while blank <11:
@@ -289,11 +293,43 @@ def check_line_analyte(result, length):
             if char == '[':                    #iterates through the long version of result[56]
                 break
             test_time += char
-        #print(test_time)
         if (len(test_time))!=14:               #checks that execution date/time is exactly than 15 characters
             print('Error: Test execution date and time incorrect length')
+            test_time = None
+
+        analytes.append({'name': analyte_1_name, 'value': analyte_1_result, 'test_time': test_time})
+
+    print_analytes(analytes)
+
+
+def print_analytes(analytes):
+    """
+    Print each analyte's result, merging a companion S/CO (signal-to-
+    cutoff) reading into its matching analyte instead of listing it as
+    its own unrelated result. Some instruments report the numeric S/CO
+    value as its own analyte line named "<analyte>_VAL" (e.g. "Legion"
+    and "Legion_VAL" - see More sample/SCO ASTM for real examples).
+    """
+    merged = [a for a in analytes if not a['name'].endswith('_VAL')]
+    for a in analytes:
+        if not a['name'].endswith('_VAL'):
+            continue
+        base_name = a['name'][:-len('_VAL')]
+        target = next((m for m in merged if m['name'] == base_name), None)
+        if target is not None:
+            target['sco_value'] = a['value']
         else:
-            format_local_time(test_time, 'Test executed at')
+            # No matching base analyte - report it on its own rather than
+            # silently dropping it.
+            merged.append(a)
+
+    for a in merged:
+        line = f"{a['name']} = {a['value']}"
+        if a.get('sco_value') is not None:
+            line += f" (S/CO {a['sco_value']})"
+        print(line)
+        if a['test_time']:
+            format_local_time(a['test_time'], 'Test executed at')
 
 def check_line_calibration(result):
     #now checking the calibration result line
@@ -317,6 +353,8 @@ def check_line_calibration(result):
 
     analyte_1_result=result[3][3]
     print(analyte_1_result)
+    if analyte_1_result == '':
+        print('Error: Analyte result value is missing')
 
     blank=4
     while blank <11:

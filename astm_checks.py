@@ -50,9 +50,7 @@ def check_calibration(file, test_type_value):
 # BEGIN
 if __name__ == "__main__":
     # Simple CLI test when running this file directly.
-    # (This used to point at "LIS_result.txt" in the project root, which
-    # doesn't exist there - the sample files all live in sample_results/.)
-    with open("sample_results/LIS_result.txt", "r", encoding="utf-8-sig") as file:
+    with open("sample_results/good/LIS_result.txt", "r", encoding="utf-8-sig") as file:
         raw_lines = file.readlines()
 
     check_transmission_notes(raw_lines)
